@@ -1,75 +1,97 @@
 # 23619007
 
-# Paper Review: Text-Conditioned Diffusion Model for High-Fidelity Korean Font Generation
+# 논문 리뷰: Text-Conditioned Diffusion Model for High-Fidelity Korean Font Generation
 
-**Authors**: Abdul Sami, Avinash Kumar, Irfanullah Memon, Youngwon Jo, Muhammad Rizwan, Jaeyong Choi  
-**Affiliation**: Soongsil University  
-**arXiv**: [2504.21325](https://arxiv.org/abs/2504.21325)  
-**Year**: 2024
+**저자**: Abdul Sami, Avinash Kumar, Irfanullah Memon, Youngwon Jo, Muhammad Rizwan, Jaeyong Choi  
+**소속**: 숭실대학교 컴퓨터학부  
+**출처**: arXiv: [2504.21325](https://arxiv.org/abs/2504.21325)  
+**연도**: 2024
 
-## 1. Research Background and Purpose
+---
 
-This paper proposes a high-fidelity automatic Korean font generation method named **DK-Font**, which utilizes a text-conditioned diffusion model. Existing GAN/VAE-based methods often suffer from training instability, mode collapse, and difficulty preserving fine stylistic details, especially in complex languages like Korean. The proposed approach aims to solve these limitations by integrating phonetic character encoding and a robust diffusion framework.
+## 1. 연구 배경 및 목적
 
-## 2. Method Overview
+본 논문은 **복잡한 구조의 한글 글자체를 자동으로 생성**하기 위한 고품질 폰트 생성 모델인 **DK-Font**를 제안한다.  
+기존의 GAN, VAE 기반 폰트 생성 방식은 다음과 같은 문제를 가진다:
 
-### Dataset
+- 훈련 불안정성 및 모드 붕괴
+- 스타일 일관성 부족
+- 복잡한 구조(한글 등)에서 세부 표현 실패
 
-- Korean font dataset with 210 styles (105 handwritten, 105 printed)
-- Each font contains 2,350 commonly used Korean characters
-- Split: 200 fonts for training, 10 for testing (5 per category)
+이러한 문제를 해결하기 위해, 본 연구는 **텍스트 조건부 확산 모델(Diffusion Model)**을 기반으로 구조적 일관성과 시각적 완성도를 동시에 보장하는 폰트 생성 모델을 설계하였다.
 
-### Preprocessing
+---
 
-- Image size normalized to 128×128 pixels
-- Character-level phonetic information (Choseong, Jungseong, Jongseong) embedded as text input vectors
+## 2. 제안 방법
 
-### Model Architecture
+### 데이터셋
 
-- **Backbone**: U-Net-based Diffusion Model
-- **Text Encoder**: Encodes phonetic features of characters
-- **Style Encoder**: DG-Font pretrained encoder used
-- **Character Attributes Encoder**: Integrates text, stroke, and style information into a latent representation `z`
-- **Loss Function**:
-  - Perceptual Loss using VGG-19
-  - Mean Squared Error (MSE)
+- 총 210종 폰트 (손글씨 105종 + 인쇄체 105종)
+- 각 폰트는 2,350자의 한글 글자를 포함
+- 훈련용: 200종 / 테스트용: 10종 (훈련에 포함되지 않음)
 
-### Training Settings
+### 전처리
+
+- 이미지 크기: 128×128 픽셀로 정규화
+- 각 문자에 대한 초성/중성/종성 정보를 벡터로 변환하여 텍스트 인코더에 입력
+
+### 모델 구조
+
+- 기본 구조: U-Net 기반 확산 모델
+- **텍스트 인코더**: 음운(자모) 정보 임베딩
+- **스타일 인코더**: DG-Font 사전학습된 인코더 사용
+- **속성 인코더(Character Attributes Encoder)**:
+  - 텍스트 + 스타일 + 스트로크 정보를 통합한 잠재 벡터 `z` 생성
+- **손실 함수**:
+  - MSE (Mean Squared Error)
+  - Perceptual Loss (VGG-19 기반)
+
+### 학습 설정
 
 - Optimizer: AdamW
 - Learning Rate: 0.001
 - Batch Size: 16
 - Iterations: 50,000
-- Noise Scheduler: cosine
 - Dropout: 0.1
+- Noise Scheduler: Cosine 방식 사용
 
-## 3. Experimental Results
+---
 
-### Evaluation Metrics
+## 3. 실험 결과
 
-- **SSIM (↑)**: Structural Similarity Index
-- **RMSE (↓)**: Root Mean Square Error
-- **LPIPS (↓)**: Learned Perceptual Image Patch Similarity
-- **FID (↓)**: Fréchet Inception Distance
+### 평가 지표
 
-### Quantitative Comparison
+- **SSIM (↑)**: 구조 유사도
+- **RMSE (↓)**: 평균 제곱근 오차
+- **LPIPS (↓)**: 지각적 이미지 유사도
+- **FID (↓)**: 생성 이미지의 현실성 평가 지표
 
-| Model     | SSIM | RMSE  | LPIPS | FID    |
-|-----------|------|-------|--------|--------|
-| Diff-Font | 0.812 | 0.196 | 0.072 | 10.690 |
-| DK-Font   | 0.857 | 0.123 | 0.063 | 10.446 |
+### 정량 평가
 
-- DK-Font outperforms Diff-Font in all metrics
-- Visual comparison also shows more structurally consistent and stylistically coherent results in both handwritten and printed font styles
+| 모델       | SSIM | RMSE  | LPIPS | FID    |
+|------------|------|--------|--------|--------|
+| Diff-Font  | 0.812 | 0.196  | 0.072  | 10.690 |
+| DK-Font    | 0.857 | 0.123  | 0.063  | 10.446 |
 
-## 4. Limitations
+- DK-Font는 모든 지표에서 기존 모델(Diff-Font) 대비 향상된 성능을 보임
+- 시각적 비교(Fig.3, Fig.4)에서도 더 깔끔하고 일관된 스타일 생성 결과를 확인함
 
-- The method is tested only on Korean character datasets; generalization to other scripts (e.g., Latin, Chinese) is not verified
-- May be sensitive to input image quality, especially in one-shot settings
-- Further experiments are needed on irregular and ambiguous character forms
+---
 
-## 5. Summary
+## 4. 한계점
 
-The paper introduces **DK-Font**, a text-conditioned diffusion model capable of generating full sets of high-quality Korean fonts using only a single reference character.  
-By integrating phonetic text encodings and perceptual loss, the model achieves superior visual and structural accuracy compared to previous methods.  
-This approach demonstrates the potential of adapting vision-language models like SAM and Diffusion for complex character-based languages.
+- 실험은 **한글 데이터셋**에 한정되어 있음 → 타 문자나 언어에 대한 일반화는 추가 연구 필요
+- **입력 문자 품질**에 민감하며, 비정형적 형태나 복잡한 구조에서는 성능 저하 가능성 있음
+- 다양한 스타일·서체 범위 확장과 도전적인 문자 조합에 대한 추가 실험이 요구됨
+
+---
+
+## 5. 결론 및 요약
+
+DK-Font는 **텍스트 조건부 확산 모델을 기반으로 한글 폰트를 고품질로 생성**하는 데 성공하였다.  
+기존 방법이 지니던 콘텐츠 손실, 스타일 불일치, 구조 왜곡 등의 문제를 해결하며,  
+**한 장의 스타일 이미지로 전체 폰트를 정밀하게 재현**하는 것을 가능하게 하였다.  
+
+해당 연구는 복잡한 문자 기반 언어에 대해 **비전 기반 사전학습 모델(SAM 등)**의 구조를 효과적으로 응용한 사례이며,  
+향후 타 언어 확장 및 다양한 스타일 적용에도 활용 가능성이 높다.
+
